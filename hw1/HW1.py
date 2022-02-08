@@ -57,10 +57,10 @@ A = np.random.randint(-5, 5, size=(5, 4))
 AT = np.transpose(A)
 ATA = np.matmul(AT, A)
 AAT = np.matmul(A, AT)
-evATA = LA.eig(ATA)[0]
+evATA = LA.eig(ATA)[0].real
 print("ev of A^TA: ")
 print(evATA)
-evAAT = LA.eig(AAT)[0]
+evAAT = LA.eig(AAT)[0].real
 print("ev of AA^T: ")
 print(evAAT)
 print("Dimensions of ATA: ")
@@ -96,8 +96,39 @@ The result is equal to the eigenvalues of the original matrix.
 This displays that the eigenvalues of an inverse matrix are the inverse
 of the original matrix's eigenvalues'''
 
+#1c
+C = 0
+while 1:
+    temp = np.random.randint(-5, 5, size=(3, 3))
+    if not np.array_equal(temp, np.transpose(temp)):
+        C = temp
+        break
 
+CT = np.transpose(C)
+evC = LA.eig(C)[0].real
+print("eigenvalues of C:")
+print(evC)
+evCT = LA.eig(CT)[0].real
+print("eigenvalues of CT:")
+print(evCT)
+np.sort(evC)
+np.sort(evCT)
 
+def sumofsd(v, u):
+    sum = 0
+    for i, value in enumerate(v):
+        sum += (v[i] - u[i]) ** 2
+    return sum
+
+print(sumofsd(evC, evCT))
+'''
+The eigenvalues for C and its transpose are equal. The sum of square 
+differences be 0, since they are the same values, yet it is an
+astronomically low number, approximate to 0. This clearly displays
+that this was a floating point error due to the computer.
+'''
+
+#1d
 
 
 # Problem 2 - Run Times and Efficiency
