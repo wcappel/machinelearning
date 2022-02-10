@@ -39,18 +39,76 @@ import matplotlib.pyplot as plt
  decompositions and cite your sources.  Write your ideas in a comment for 
  each one below:"""
 
+#1d
 # Initialize matrix D:  
-    
-# LU Factorization
-# LA.lu(D)
+D = np.random.randint(-5, 5, size=(3, 3))
 
+# LU Factorization
+print("### LU ###")
+LU = LA.lu(D)
+lower = LU[1]
+upper = LU[2]
+print("Is U equal to its upper triangle?")
+print(np.array_equal(np.triu(upper), upper))
+print("Is L equal to its lower triangle?")
+print(np.array_equal(np.tril(lower), lower))
+
+''' The LU decomposition decomposes a matrix into two factors, one being a lower 
+triangular matrix L (where all entries above the diagonal are 0), and an upper
+triangular matrix U (where all entries below the diagonal are 0). U is found through 
+Gaussian elimination, where the matrix is put into row echelon form. L is then either
+found through algebra or by using the remaining elements as multiplier coefficients.
+My code demonstrates that U from the decomposition is equal to its upper triangle, 
+and that L is equal to its lower triangle, hence proving that the factors are
+upper and lower triangular matrices.
+Reference: https://www.geeksforgeeks.org/l-u-decomposition-system-linear-equations/
+'''
 
 # QR Factorization
-# LA.qr(D)
+print("### QR ###")
+QR = LA.qr(D)
+Q = QR[0]
+R = QR[1]
+QT = np.transpose(Q)
+# rounding to decimal place 5 here due to FP errors
+QTQ = np.around(np.matmul(QT, Q), 5)
+print("Is QTQ equal to its identity matrix?")
+print(np.array_equal(QTQ, np.identity(QTQ.shape[0])))
+print("Is R equal to its upper triangle?")
+print(np.array_equal(R, np.triu(R)))
 
+'''The QR decomposition decomposes a matrix into two factors, one being an orthogonal
+matrix Q, and the other being an upper triangular matrix R. Both of these factors can
+be computed through the Gram-Schmidt process. My code demonstrates that Q from the
+decomposition is an orthogonal matrix by multiplying its transpose with the matrix on
+the right to show that it is equal to its identity matrix. My code also displays that
+R is equal to its upper triangle.
+Reference: https://www.math.ucla.edu/~yanovsky/Teaching/Math151B/handouts/GramSchmidt.pdf'''
 
 # Singular Value Decomposition (SVD)
-# LA.svd(D)
+print("### SVD ###")
+SVD = LA.svd(D)
+U = SVD[0]
+V = np.transpose(SVD[2])
+sigma = LA.diagsvd(SVD[1], D.shape[0], D.shape[1])
+DDT = np.matmul(D, np.transpose(D))
+DTD = np.matmul(np.transpose(D), D)
+print("Is U an orthogonal matrix?")
+UTU = np.around(np.matmul(np.transpose(U), U), 5)
+print(np.array_equal(UTU, np.identity(UTU.shape[0])))
+print("Is V an orthogonal matrix?")
+VTV = np.around(np.matmul(np.transpose(V), V), 5)
+print(np.array_equal(VTV, np.identity(VTV.shape[0])))
+print("Printing Σ displays it is a diagonal matrix")
+print(sigma)
+
+'''The SVD decomposes a matrix into three factors, U being an orthogonal matrix, V^T being 
+the transpose of an orthogonal matrix, and Σ being a diagonal matrix w/ positive real
+entries along its diagonal. My code demonstrates that U and V are orthogonal matrices, and
+that printing Σ displays it is a diagonal matrix. 
+Reference: https://www.cs.princeton.edu/courses/archive/spring12/cos598C/svdchapter.pdf
+'''
+
 
 # 1a.
 A = np.random.randint(-5, 5, size=(5, 4))
@@ -123,13 +181,10 @@ def sumofsd(v, u):
 print(sumofsd(evC, evCT))
 '''
 The eigenvalues for C and its transpose are equal. The sum of square 
-differences be 0, since they are the same values, yet it is an
+differences must be 0, since they are the same values, yet it is an
 astronomically low number, approximate to 0. This clearly displays
 that this was a floating point error due to the computer.
 '''
-
-#1d
-
 
 # Problem 2 - Run Times and Efficiency
 #------------------------------------------------------------------------------
