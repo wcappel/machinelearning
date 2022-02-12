@@ -164,7 +164,8 @@ print(np.array_equal(R, np.triu(R)))
 
 '''The QR decomposition decomposes a matrix into two factors, one being an orthogonal
 matrix Q, and the other being an upper triangular matrix R. Both of these factors can
-be computed through the Gram-Schmidt process. My code demonstrates that Q from the
+be computed through the Gram-Schmidt process, which takes a set of linearly independent 
+vectors and finds an orthonormal basis for them. My code demonstrates that Q from the
 decomposition is an orthogonal matrix by multiplying its transpose with the matrix on
 the right to show that it is equal to its identity matrix. My code also displays that
 R is equal to its upper triangle.
@@ -189,8 +190,11 @@ print(sigma)
 
 '''The SVD decomposes a matrix into three factors, U being an orthogonal matrix, V^T being 
 the transpose of an orthogonal matrix, and Σ being a diagonal matrix w/ positive real
-entries along its diagonal. My code demonstrates that U and V are orthogonal matrices, and
-that printing Σ displays it is a diagonal matrix. 
+entries along its diagonal. This is done by computing the singular values, which can be
+found through the eigenvalues of the matrix multiplied by its transpose on the right. Then
+the orthonormal set of vectors of the matrix's transpose multiplied by the matrix are found.
+My code demonstrates that U and V are orthogonal matrices, and that printing Σ displays it 
+is a diagonal matrix.
 Reference: https://www.cs.princeton.edu/courses/archive/spring12/cos598C/svdchapter.pdf
 '''
 
@@ -222,7 +226,7 @@ def runtimes(samplenum, shape):
     solResults = []
     for i in range(samplenum):
         matrix = np.random.rand(shape, shape)
-        b = np.random.rand(shape)
+        b = np.identity(shape)
         invStart = time.time()
         LA.inv(matrix)
         invEnd = time.time()
@@ -298,8 +302,3 @@ plt.xlabel("Time (seconds)")
 plt.ylabel("Samples")
 plt.legend()
 plt.show()
-
-
-
-
-
