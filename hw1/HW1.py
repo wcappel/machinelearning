@@ -42,8 +42,8 @@ ATAdet = LA.det(ATA)
 print("det. of ATA: ")
 print(ATAdet)
 
-'''AA^T has one more eigenvalue than A^TA, but the other eigenvalues of each
-are equal if you discount the complex numbers in A^TA.
+'''AA^T has one more eigenvalue than A^TA (being a 0), but the other 
+eigenvalues of each are equal if you discount the complex numbers in A^TA.
 The determinant of A^TA is equal to the product of all its eigenvalues.'''
 
 """
