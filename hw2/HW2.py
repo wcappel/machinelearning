@@ -6,6 +6,7 @@
 import pandas as pd
 import scipy.linalg as LA
 import numpy as np
+import matplotlib.pyplot as plt
 
 # Problem 1 - Linear Regression with Athens Temperature Data
 #------------------------------------------------------------------------------
@@ -37,8 +38,12 @@ def LLS_Solve(x,y, deg):
     A = A_mat(x, deg)
     ATA = np.matmul(np.transpose(A), A)
     invATA = LA.inv(ATA)
+    y = np.vstack(y)
     ATy = np.matmul(np.transpose(A), y)
-    w = np.multiply(invATA, ATy)
+    w = np.matmul(invATA, ATy)
+    print(invATA)
+    print(ATy)
+    # print(np.shape(w))
     return w
 
 def LLS_ridge(x,y,deg,lam):
@@ -60,7 +65,7 @@ def poly_func(data, coeffs):
        data: x-values of the polynomial.
        coeffs: vector of coefficients for the polynomial."""
     A = A_mat(data, np.size(coeffs) - 1)
-    output = np.multiply(A, coeffs)
+    output = np.matmul(A, coeffs)
     return output
 
 def LLS_func(x,y,w,deg):
@@ -79,13 +84,24 @@ def RMSE(x,y,w):
        y: vector of output data.
        w: vector of weights."""
     A = A_mat(x, np.size(w) - 1)
-    normComp = LA.norm(y - np.multiply(A, w)) ** 2
+    normComp = LA.norm(y - np.matmul(A, w)) ** 2
     rmse = (1/np.size(x) * normComp) ** (1/2)
     return rmse
 
 
 # 1b. Solve the least squares linear regression problem for the Athens 
 #     temperature data.  Make sure to annotate the plot with the RMSE.
+DF = pd.read_csv("athens_ww2_weather.csv", usecols=['MaxTemp', 'MinTemp'])
+athensx = DF['MinTemp'].astype(float).to_list()
+athensy = DF['MaxTemp'].astype(float).to_list()
+athenssol = LLS_Solve(athensx, athensy, 1)
+points = poly_func(athensx, athenssol)
+athensrmse = RMSE(athensx, athensy, athenssol)
+plt.scatter(athensx, athensy)
+plt.plot(athensx, points, label="RMSE: " + str(athensrmse))
+plt.legend()
+plt.show()
+
 
 
 # Problem 2 -- Polynomial Regression with the Yosemite Visitor Data
