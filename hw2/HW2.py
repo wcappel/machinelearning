@@ -7,6 +7,7 @@ import pandas as pd
 import scipy.linalg as LA
 import numpy as np
 import matplotlib.pyplot as plt
+import random
 
 # Problem 1 - Linear Regression with Athens Temperature Data
 #------------------------------------------------------------------------------
@@ -19,15 +20,15 @@ def A_mat(x, deg):
     """Create the matrix A part of the least squares problem.
        x: vector of input data.
        deg: degree of the polynomial fit."""
-    A = []
+    x = np.vstack(x)
+    A = np.empty(shape=(0, deg + 1))
     for point in x:
         max_deg = deg
-        currRow = []
+        currRow = np.array([])
         while max_deg >= 0:
-            currRow.append(point ** max_deg)
+            currRow = np.append(currRow, point ** max_deg)
             max_deg = max_deg - 1
-        A.append(currRow)
-    A = np.asmatrix(A)
+        A = np.vstack([A, currRow])
     return A
 
 def LLS_Solve(x,y, deg):
@@ -41,9 +42,6 @@ def LLS_Solve(x,y, deg):
     y = np.vstack(y)
     ATy = np.matmul(np.transpose(A), y)
     w = np.matmul(invATA, ATy)
-    print(invATA)
-    print(ATy)
-    # print(np.shape(w))
     return w
 
 def LLS_ridge(x,y,deg,lam):
@@ -52,18 +50,21 @@ def LLS_ridge(x,y,deg,lam):
        y: vector of output data.
        deg: degree of the polynomial fit.
        lam: parameter for the ridge regression."""
+    y = np.vstack(y)
     A = A_mat(x, deg)
     ATA = np.matmul(np.transpose(A), A)
-    lamI = np.multiply(lam, np.identity(ATA.shape[0]))
+    lamI = np.multiply(np.identity(ATA.shape[0]), lam)
     invCom = LA.inv(np.add(ATA, lamI))
     ATy = np.matmul(np.transpose(A), y)
-    w = np.multiply(invCom, ATy)
+    w = np.matmul(invCom, ATy)
     return w
 
 def poly_func(data, coeffs):
     """Produce the vector of output data for a polynomial.
        data: x-values of the polynomial.
        coeffs: vector of coefficients for the polynomial."""
+    data = np.vstack(data)
+    coeffs = np.vstack(coeffs)
     A = A_mat(data, np.size(coeffs) - 1)
     output = np.matmul(A, coeffs)
     return output
@@ -83,25 +84,29 @@ def RMSE(x,y,w):
        x: vector of input data.
        y: vector of output data.
        w: vector of weights."""
+    x = np.vstack(x)
     A = A_mat(x, np.size(w) - 1)
-    normComp = LA.norm(y - np.matmul(A, w)) ** 2
-    rmse = (1/np.size(x) * normComp) ** (1/2)
+    y = np.vstack(y)
+    normComp = np.square(LA.norm(np.subtract(y, np.matmul(A, w))))
+    rmse = (normComp/np.size(x)) ** (1/2)
     return rmse
 
 
 # 1b. Solve the least squares linear regression problem for the Athens 
 #     temperature data.  Make sure to annotate the plot with the RMSE.
-DF = pd.read_csv("athens_ww2_weather.csv", usecols=['MaxTemp', 'MinTemp'])
-athensx = DF['MinTemp'].astype(float).to_list()
-athensy = DF['MaxTemp'].astype(float).to_list()
+athensDF = pd.read_csv("athens_ww2_weather.csv", usecols=['MaxTemp', 'MinTemp'])
+athensx = athensDF['MinTemp'].astype(float).to_list()
+athensy = athensDF['MaxTemp'].astype(float).to_list()
 athenssol = LLS_Solve(athensx, athensy, 1)
-points = poly_func(athensx, athenssol)
+athenspoints = poly_func(athensx, athenssol)
 athensrmse = RMSE(athensx, athensy, athenssol)
 plt.scatter(athensx, athensy)
-plt.plot(athensx, points, label="RMSE: " + str(athensrmse))
+plt.plot(athensx, athenspoints, label="RMSE: " + str(athensrmse), color='red')
+plt.title("Athens Temp. Data Linear Fit")
+plt.xlabel("Min. Temperature")
+plt.ylabel("Max. Temperature")
 plt.legend()
 plt.show()
-
 
 
 # Problem 2 -- Polynomial Regression with the Yosemite Visitor Data
@@ -111,9 +116,89 @@ plt.show()
 #     n ranging from 1 to 20.  Additionally, create plots comparing the 
 #     training error and RMSE for 3 years of data selected at random (distinct
 #     from the years used for training).
-    
-    
+yosemiteDF = pd.read_csv('Yosemite_Visits.csv')
+# print(yosemiteDF)
+yose2018 = [int(i.replace(',', '')) for i in yosemiteDF.iloc[0].to_list()[1:]]
+yose2008 = [int(i.replace(',', '')) for i in yosemiteDF.iloc[10].to_list()[1:]]
+yose1998 = [int(i.replace(',', '')) for i in yosemiteDF.iloc[20].to_list()[1:]]
+yose1988 = [int(i.replace(',', '')) for i in yosemiteDF.iloc[30].to_list()[1:]]
+yose1979 = [int(i.replace(',', '')) for i in yosemiteDF.iloc[39].to_list()[1:]]
+# print(yose2018)
+monthValues = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+
+def trainingVisuals():
+    plt.scatter(monthValues, yose2018, c="red")
+    plt.plot(monthValues, yose2018, c="red", label="2018")
+    plt.scatter(monthValues, yose2008, c="orange")
+    plt.plot(monthValues, yose2008, c="orange", label="2008")
+    plt.scatter(monthValues, yose1998, c="yellow")
+    plt.plot(monthValues, yose1998, c="yellow", label="1998")
+    plt.scatter(monthValues, yose1988, c="green")
+    plt.plot(monthValues, yose1988, c="green", label="1988")
+    plt.scatter(monthValues, yose1979, c="blue")
+    plt.plot(monthValues, yose1979, c="blue", label="1979")
+    plt.xlabel("Month")
+    plt.ylabel("Visitors")
+
+yosex = []
+yosex += monthValues * 5
+yosex = sorted(yosex)
+yosey = []
+for i in range(12):
+    yosey.append(yose2018[i])
+    yosey.append(yose2008[i])
+    yosey.append(yose1998[i])
+    yosey.append(yose1988[i])
+    yosey.append(yose1979[i])
+
+for i in range(20):
+    yosesol = LLS_Solve(yosex, yosey, i + 1)
+    yosepoints = poly_func(yosex, yosesol)
+    yosermse = RMSE(yosex, yosey, yosesol)
+    trainingVisuals()
+    plt.plot(yosex, yosepoints, c="purple", label="RMSE: " + str(yosermse), linewidth=3)
+    plt.title("" + str(i + 1) + "-degree fit")
+    plt.legend()
+    plt.show()
+
+# select 3 random non-training years
+testYears = []
+while 1:
+    num = random.randint(1, 38)
+    if len(testYears) == 3:
+        break
+    else:
+        alreadyHas = False
+        for y in testYears:
+            if y == num:
+                alreadyHas = True
+        if not alreadyHas:
+            testYears.append(num)
+
+for year in testYears:
+    values = [int(i.replace(',', '')) for i in yosemiteDF.iloc[year].to_list()[1:]]
+    colors = []
+    for i in range(3):
+        colors.append(random.random())
+    plt.scatter(monthValues, values, c=colors)
+    plt.plot(monthValues, values, c=colors, label=2018-year)
+
+yoseeval = poly_func(yosex, LLS_Solve(yosex, yosey, 7))
+
+plt.plot(yosex, yoseeval, c="purple", linewidth=3)
+plt.title("7-degree fit compared against 3 random years")
+plt.xlabel("Month")
+plt.ylabel("Visitors")
+plt.legend()
+plt.show()
+
 # 2b. Solve the ridge regression regularization fitting for 5 years of data for
 #     a fixed degree n >= 10.  Vary the parameter lam over 20 equally-spaced
 #     values from 0 to 1.  Annotate the plots with this value.  
-   
+for i in range(20):
+    yoseridge = LLS_ridge(yosex, yosey, 12, 0.05 * (i + 1))
+    ridgepoints = poly_func(yosex, yoseridge)
+    trainingVisuals()
+    plt.plot(yosex, ridgepoints, c="purple", label="λ = " + str(np.around(0.05 * (i + 1), 2)), linewidth=3)
+    plt.legend()
+    plt.show()
