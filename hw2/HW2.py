@@ -153,10 +153,10 @@ for i in range(12):
 
 for i in range(20):
     yosesol = LLS_Solve(yosex, yosey, i + 1)
-    yosepoints = poly_func(yosex, yosesol)
+    yosepoints = poly_func(np.linspace(1, 12, 100), yosesol)
     yosermse = RMSE(yosex, yosey, yosesol)
     trainingVisuals()
-    plt.plot(yosex, yosepoints, c="purple", label="RMSE: " + str(yosermse), linewidth=3)
+    plt.plot(np.linspace(1, 12, 100), yosepoints, c="purple", label="RMSE: " + str(yosermse), linewidth=3)
     plt.title("" + str(i + 1) + "-degree fit")
     plt.legend()
     plt.show()
@@ -183,9 +183,9 @@ for year in testYears:
     plt.scatter(monthValues, values, c=colors)
     plt.plot(monthValues, values, c=colors, label=2018-year)
 
-yoseeval = poly_func(yosex, LLS_Solve(yosex, yosey, 7))
+yoseeval = poly_func(np.linspace(1, 12, 100), LLS_Solve(yosex, yosey, 7))
 
-plt.plot(yosex, yoseeval, c="purple", linewidth=3)
+plt.plot(np.linspace(1, 12, 100), yoseeval, c="purple", linewidth=3)
 plt.title("7-degree fit compared against 3 random years")
 plt.xlabel("Month")
 plt.ylabel("Visitors")
@@ -197,8 +197,9 @@ plt.show()
 #     values from 0 to 1.  Annotate the plots with this value.  
 for i in range(20):
     yoseridge = LLS_ridge(yosex, yosey, 12, 0.05 * (i + 1))
-    ridgepoints = poly_func(yosex, yoseridge)
+    ridgepoints = poly_func(np.linspace(1, 12, 100), yoseridge)
     trainingVisuals()
-    plt.plot(yosex, ridgepoints, c="purple", label="λ = " + str(np.around(0.05 * (i + 1), 2)), linewidth=3)
+    plt.plot(np.linspace(1, 12, 100), ridgepoints, c="purple", label="λ = " + str(np.around(0.05 * (i + 1), 2)), linewidth=3)
+    plt.title("Ridge 12-degree fit w/ λ = " + str(np.around(0.05 * (i + 1), 2)))
     plt.legend()
     plt.show()
