@@ -87,7 +87,7 @@ def RMSE(x,y,w):
     x = np.vstack(x)
     A = A_mat(x, np.size(w) - 1)
     y = np.vstack(y)
-    normComp = np.square(LA.norm(np.subtract(y, np.matmul(A, w))))
+    normComp = np.square(LA.norm(np.subtract(np.matmul(A, w), y)))
     rmse = (normComp/np.size(x)) ** (1/2)
     return rmse
 
@@ -101,7 +101,7 @@ athenssol = LLS_Solve(athensx, athensy, 1)
 athenspoints = poly_func(athensx, athenssol)
 athensrmse = RMSE(athensx, athensy, athenssol)
 plt.scatter(athensx, athensy)
-plt.plot(athensx, athenspoints, label="RMSE: " + str(athensrmse), color='red')
+plt.plot(athensx, athenspoints, label="RMSE: " + str(np.around(athensrmse, 3)), color='red')
 plt.title("Athens Temp. Data Linear Fit")
 plt.xlabel("Min. Temperature")
 plt.ylabel("Max. Temperature")
@@ -117,13 +117,11 @@ plt.show()
 #     training error and RMSE for 3 years of data selected at random (distinct
 #     from the years used for training).
 yosemiteDF = pd.read_csv('Yosemite_Visits.csv')
-# print(yosemiteDF)
 yose2018 = [int(i.replace(',', '')) for i in yosemiteDF.iloc[0].to_list()[1:]]
 yose2008 = [int(i.replace(',', '')) for i in yosemiteDF.iloc[10].to_list()[1:]]
 yose1998 = [int(i.replace(',', '')) for i in yosemiteDF.iloc[20].to_list()[1:]]
 yose1988 = [int(i.replace(',', '')) for i in yosemiteDF.iloc[30].to_list()[1:]]
 yose1979 = [int(i.replace(',', '')) for i in yosemiteDF.iloc[39].to_list()[1:]]
-# print(yose2018)
 monthValues = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
 def trainingVisuals():
@@ -156,7 +154,7 @@ for i in range(20):
     yosepoints = poly_func(np.linspace(1, 12, 100), yosesol)
     yosermse = RMSE(yosex, yosey, yosesol)
     trainingVisuals()
-    plt.plot(np.linspace(1, 12, 100), yosepoints, c="purple", label="RMSE: " + str(yosermse), linewidth=3)
+    plt.plot(np.linspace(1, 12, 100), yosepoints, c="purple", label="RMSE: " + str(np.around(yosermse, 3)), linewidth=3)
     plt.title("" + str(i + 1) + "-degree fit")
     plt.legend()
     plt.show()
@@ -175,13 +173,17 @@ while 1:
         if not alreadyHas:
             testYears.append(num)
 
+yosecomp = poly_func(np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]), LLS_Solve(yosex, yosey, 7))
+
 for year in testYears:
     values = [int(i.replace(',', '')) for i in yosemiteDF.iloc[year].to_list()[1:]]
     colors = []
     for i in range(3):
         colors.append(random.random())
     plt.scatter(monthValues, values, c=colors)
-    plt.plot(monthValues, values, c=colors, label=2018-year)
+    nc = np.square(LA.norm(np.subtract(yosecomp, values)))
+    nc = (nc / 12) ** (1 / 2)
+    plt.plot(monthValues, values, c=colors, label=str(2018-year) + "\nRMSE: " + str(np.around(nc, 3)))
 
 yoseeval = poly_func(np.linspace(1, 12, 100), LLS_Solve(yosex, yosey, 7))
 
