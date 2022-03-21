@@ -95,42 +95,43 @@ athensDF = pd.read_csv("athens_ww2_weather.csv", usecols=['MaxTemp', 'MinTemp'])
 athensx = athensDF['MinTemp'].astype(float).to_list()
 athensy = athensDF['MaxTemp'].astype(float).to_list()
 
-# w = [100, -100]
-# K = 0.01
-# D = LLS_deriv(athensx, athensy, w, 1)
-# iterations = []
-# d_hist = []
-# c_hist = []
-# iter = 0
-# while LA.norm(D) >= K:
-#     iter += 1
-#     iterations.append(iter)
-#     d_hist.append(LA.norm(D))
-#     c_hist.append(LLS_func(athensx, athensy, w, 1))
-#     eps = 1
-#     m = LA.norm(D) ** 2
-#     t = 0.5 * m
-#     while LLS_func(athensx, athensy, w - eps * D, 1) > LLS_func(athensx, athensy, w, 1) - eps * t:
-#         eps *= 0.9
-#     wnext = w - (eps * D)
-#     w = wnext
-#     D = LLS_deriv(athensx, athensy, w, 1)
-#     print(w)
-#
-# athenspoints = poly_func(athensx, w)
-# plt.scatter(athensx, athensy)
-# plt.plot(athensx, athenspoints)
-# plt.show()
-#
-# xnew = np.linspace(np.array(iterations).min(), np.array(iterations).max(), 200)
-# cspl = make_interp_spline(iterations, c_hist, k=3)
-# dspl = make_interp_spline(iterations, d_hist, k=3)
-# c_smooth = cspl(xnew)
-# d_smooth = dspl(xnew)
-# plt.plot(xnew, c_smooth, label="Cost")
-# plt.plot(xnew, d_smooth, label="Size of deriv.")
-# plt.legend()
-# plt.show()
+w = [100, -100]
+K = 0.01
+D = LLS_deriv(athensx, athensy, w, 1)
+iterations = []
+d_hist = []
+c_hist = []
+iter = 0
+while LA.norm(D) >= K:
+    iter += 1
+    iterations.append(iter)
+    d_hist.append(LA.norm(D))
+    c_hist.append(LLS_func(athensx, athensy, w, 1))
+    eps = 1
+    m = LA.norm(D) ** 2
+    t = 0.5 * m
+    while LLS_func(athensx, athensy, w - eps * D, 1) > LLS_func(athensx, athensy, w, 1) - eps * t:
+        eps *= 0.9
+    wnext = w - (eps * D)
+    w = wnext
+    D = LLS_deriv(athensx, athensy, w, 1)
+    print(w)
+
+athenspoints = poly_func(athensx, w)
+plt.scatter(athensx, athensy)
+plt.plot(athensx, athenspoints)
+plt.show()
+
+xnew = np.linspace(np.array(iterations).min(), np.array(iterations).max(), 200)
+cspl = make_interp_spline(iterations, c_hist, k=3)
+dspl = make_interp_spline(iterations, d_hist, k=3)
+c_smooth = cspl(xnew)
+d_smooth = dspl(xnew)
+plt.plot(xnew, c_smooth, label="Cost")
+plt.plot(xnew, d_smooth, label="Size of deriv.")
+plt.xlabel("Iterations")
+plt.legend()
+plt.show()
 
 # 1c. Repeat part 1b, but now implement mini-batch gradient descent by randomizing
 #     the data points used in each iteration.  Perform mini-batch descent for batches
@@ -279,5 +280,6 @@ l1smooth = l1spl(lamsx)
 l2smooth = l2spl(lamsx)
 plt.plot(lamsx, l1smooth, label="L1 norm of optimal w")
 plt.plot(lamsx, l2smooth, label="L2 norm of optimal w")
+plt.xlabel("λ")
 plt.legend()
 plt.show()
