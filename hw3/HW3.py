@@ -1,4 +1,4 @@
-# Name: 
+# Name: Wilton Cappel
 # COMP 347 - Machine Learning
 # HW No. 3
 
@@ -122,7 +122,14 @@ athensy = athensDF['MaxTemp'].astype(float).to_list()
 # plt.plot(athensx, athenspoints)
 # plt.show()
 #
-# plt.scatter(y=d_hist, x=c_hist)
+# xnew = np.linspace(np.array(iterations).min(), np.array(iterations).max(), 200)
+# cspl = make_interp_spline(iterations, c_hist, k=3)
+# dspl = make_interp_spline(iterations, d_hist, k=3)
+# c_smooth = cspl(xnew)
+# d_smooth = dspl(xnew)
+# plt.plot(xnew, c_smooth, label="Cost")
+# plt.plot(xnew, d_smooth, label="Size of deriv.")
+# plt.legend()
 # plt.show()
 
 # 1c. Repeat part 1b, but now implement mini-batch gradient descent by randomizing
@@ -169,20 +176,23 @@ def athensDesc(batchsize):
         print(w)
     xnew = np.linspace(np.array(iterations).min(), np.array(iterations).max(), 200)
     cspl = make_interp_spline(iterations, c_hist, k=3)
+    dspl = make_interp_spline(iterations, d_hist, k=3)
     c_smooth = cspl(xnew)
-    plt.plot(xnew, c_smooth)
+    d_smooth = dspl(xnew)
+    plt.plot(xnew, c_smooth, label="Cost")
+    plt.plot(xnew, d_smooth, label="Size of deriv.")
     plt.title("Batch size: " + str(batchsize))
-    plt.show()
-    plt.plot(iterations, d_hist)
-    plt.title("Batch size: " + str(batchsize))
+    plt.xlabel("Iterations")
+    plt.legend()
     plt.show()
     print(c_hist)
     print(d_hist)
+    return (c_hist, d_hist, iterations)
 
-# athensDesc(5)
-# athensDesc(10)
-# athensDesc(25)
-# athensDesc(50)
+athens5c, athens5d, athens5i = athensDesc(5)
+athens10c, athens10d, athens10i = athensDesc(10)
+athens25c, athens25d, athens25i = athensDesc(25)
+athens50c, athens50d, athens50i = athensDesc(50)
 
 # 1d. Repeat 1b, but now implement stochastic gradient descent.  Plot the curves 
 #     for d_hist and c_hist.  WARNING: There is a strong possibility that your
@@ -190,7 +200,7 @@ def athensDesc(batchsize):
 #     for the 1-dimensional case.  If needed, make sure that you adjust these functions
 #     to accommodate a single data point.
 
-# athensDesc(1)
+athens1c, athens1d, athens1i = athensDesc(1)
 
 # 1e. Aggregate your curves for batch, mini-batch, and stochastic descent methods
 #     into one final graph so that a full comparison between all methods can be
@@ -209,7 +219,6 @@ def soft_thresh(v, lam):
     """Perform the soft-thresholding operation of the vector v using parameter lam."""
     res = np.array([])
     for xi in v:
-        # print(xi)
         if xi > lam:
             res = np.append(res, xi - lam)
         elif abs(xi) <= lam:
@@ -244,7 +253,7 @@ def athensLasso(lam):
     athensyLass = athensy
     w = [100, -100]
     K = 0.01
-    D = [-1, 1]
+    D = np.vstack([-1, 1])
     iter = 0
     while LA.norm(D) >= K and iter < 20000:
         threshInput = w - lam * (LLS_deriv(athensxLass, athensyLass, w, 1))
@@ -252,10 +261,23 @@ def athensLasso(lam):
         w = wnext
         D = LLS_deriv(athensxLass, athensyLass, w, 1)
         iter += 1
-        print(iter)
         print(w)
+    return w
 
-athensLasso(1/len(athensx))
-
-    
-    
+lams = []
+l1norms = []
+l2norms = []
+for i in range(15):
+    currW = athensLasso(0.1 * (i + 1) / len(athensx))
+    l1norms.append(LA.norm(currW, ord=1))
+    l2norms.append(LA.norm(currW))
+    lams.append(0.1 * (i + 1) / len(athensx))
+lamsx = np.linspace(np.array(lams).min(), np.array(lams).max(), 200)
+l1spl = make_interp_spline(lams, l1norms, k=3)
+l2spl = make_interp_spline(lams, l2norms, k=3)
+l1smooth = l1spl(lamsx)
+l2smooth = l2spl(lamsx)
+plt.plot(lamsx, l1smooth, label="L1 norm of optimal w")
+plt.plot(lamsx, l2smooth, label="L2 norm of optimal w")
+plt.legend()
+plt.show()
