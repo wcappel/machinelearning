@@ -13,7 +13,6 @@ from itertools import combinations
 import numpy as np
 import pandas as pd
 import scipy.linalg as LA
-import pandas
 import matplotlib.pyplot as plt
 
 # Functions
@@ -168,7 +167,7 @@ def hinge_deriv(X,y,w,b):
     
 # 1b. Perform SVM Using the hinge loss formalism on the data in svm_test_2.csv.
 #     Use an appropriate initialization to your gradient descent algorithm.
-svm2DF = pandas.read_csv("svm_test_2.csv", usecols=['0', '1', '2'])
+svm2DF = pd.read_csv("svm_test_2.csv", usecols=['0', '1', '2'])
 y = svm2DF['2'].astype(float).to_list()
 X = svm2DF[['0', '1']].to_numpy()
 xblue = (svm2DF.loc[svm2DF['2'] == 1])[['0', '1']]
@@ -241,7 +240,19 @@ plt.show()
 #     taking z = sqrt(x**2 + y**2) for each data point.  Learn an optimal model
 #     for separating the data using the Lagrange multiplier formalism.  Experiment
 #     with choices for C, max_iter, and thresh as desired.
-radialDF = pd.read_csv("radial_data.csv")
+# radialDF = pd.read_csv("radial_data.csv")
+# radial2d = radialDF[['0', '1']].to_numpy()
+# radY = radialDF['2'].to_list()
+# radialX = []
+# for xi in radial2d:
+#     radialX.append([xi[0], xi[1], np.sqrt(xi[0]**2 + xi[1]**2)])
+# radialX = np.asarray(radialX)
+# LMRad = smo_algorithm(radialX, radY, 1, 2500, 1e-5)
+# aRad = LMRad[0]
+# bRad = LMRad[1]
+# wRad = 0
+# for i, xi in enumerate(radialX):
+#     wRad += aRad[i] * radY[i] * xi
     
 # Problem #2 - Cross Validation and Testing for Breast Cancer Data
 #------------------------------------------------------------------------------
@@ -252,6 +263,7 @@ radialDF = pd.read_csv("radial_data.csv")
 #     X should consist all but the first two and very last columns in the dataframe.
 #     Create a variable Y to reinterpret the binary classifiers 'B' and 'M' as
 #     -1 and +1, respectively.
+
 
 # 2b. Perform cross-validation using a linear SVM model on the data by dividing 
 #     the indexes into 10 separate randomized classes (I recommend looking up 
