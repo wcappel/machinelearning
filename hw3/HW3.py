@@ -102,7 +102,7 @@ iterations = []
 d_hist = []
 c_hist = []
 iter = 0
-while LA.norm(D) >= K:
+while LA.norm(D) >= K and iter < 10000:
     iter += 1
     iterations.append(iter)
     d_hist.append(LA.norm(D))
@@ -117,10 +117,9 @@ while LA.norm(D) >= K:
     D = LLS_deriv(athensx, athensy, w, 1)
     print(w)
 
-athenspoints = poly_func(athensx, w)
-plt.scatter(athensx, athensy)
-plt.plot(athensx, athenspoints)
-plt.show()
+batchi = iterations
+batchc = c_hist
+batchd = d_hist
 
 xnew = np.linspace(np.array(iterations).min(), np.array(iterations).max(), 200)
 cspl = make_interp_spline(iterations, c_hist, k=3)
@@ -156,7 +155,7 @@ def athensDesc(batchsize):
     c_hist = []
     iter = 0
     iterations = []
-    while LA.norm(D) >= K:
+    while LA.norm(D) >= K and iter < 10000:
         iter += 1
         iterations.append(iter)
         shuffleTogether = list(zip(athensxRem, athensyRem))
@@ -208,6 +207,28 @@ athens1c, athens1d, athens1i = athensDesc(1)
 #     observed.  Make sure your legend clearly indicates the results of each 
 #     method.  Adjust the transparency of the curves as needed.
 
+maxIter = max([batchi, athens5i, athens10i, athens25i, athens50i, athens1i])
+plt.plot(maxIter, batchc, label="Batch size = N", alpha=0.7)
+plt.plot(maxIter, athens5c, label="Batch size = 5", alpha=0.7)
+plt.plot(maxIter, athens10c, label="Batch size = 10", alpha=0.7)
+plt.plot(maxIter, athens25c, label="Batch size = 25", alpha=0.7)
+plt.plot(maxIter, athens50c, label="Batch size = 50", alpha=0.7)
+plt.plot(maxIter, athens1c, label="Batch size = 1 (stochastic)", alpha=0.7)
+plt.title("Cost history for each batch size")
+plt.xlabel("Iterations")
+plt.legend()
+plt.show()
+
+plt.plot(maxIter, batchd, label="Batch size = N", alpha=0.7)
+plt.plot(maxIter, athens5d, label="Batch size = 5", alpha=0.7)
+plt.plot(maxIter, athens10d, label="Batch size = 10", alpha=0.7)
+plt.plot(maxIter, athens25d, label="Batch size = 25", alpha=0.7)
+plt.plot(maxIter, athens50d, label="Batch size = 50", alpha=0.7)
+plt.plot(maxIter, athens1d, label="Batch size = 1 (stochastic)", alpha=0.7)
+plt.title("Deriv. size history for each batch size")
+plt.xlabel("Iterations")
+plt.legend()
+plt.show()
 
 # Problem 2 - LASSO Regularization
 #------------------------------------------------------------------------------
