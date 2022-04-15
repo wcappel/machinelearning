@@ -223,15 +223,15 @@ print(b100)
 #     sure you have a legend displaying each one clearly and adjust the transparency
 #     as needed.
 plt.plot(np.linspace(min(svm2DF['0'].to_numpy()), max(svm2DF['0'].to_numpy()), 100),
-         - (1 / (w[0])) * (w[1] * (np.linspace(-5, 5, 100)) + b), label="Hinge boundary", alpha=0.8)
+         - (1 / (w[0])) * (w[1] * (np.linspace(min(svm2DF['0'].to_numpy()), max(svm2DF['0'].to_numpy()), 100)) + b), label="Hinge boundary", alpha=0.8)
 plt.plot(np.linspace(min(svm2DF['0'].to_numpy()), max(svm2DF['0'].to_numpy()), 100),
-         - (1 / (w100[0])) * (w100[1] * (np.linspace(-5, 5, 100)) + b100), label="Lagrange C = 1 boundary", alpha=0.8)
+         - (1 / (w100[0])) * (w100[1] * (np.linspace(min(svm2DF['0'].to_numpy()), max(svm2DF['0'].to_numpy()), 100)) + b100), label="Lagrange C = 1 boundary", alpha=0.8)
 plt.plot(np.linspace(min(svm2DF['0'].to_numpy()), max(svm2DF['0'].to_numpy()), 100),
-         - (1 / (w25[0])) * (w25[1] * (np.linspace(-5, 5, 100)) + b25), label="Lagrange C = 0.25 boundary", alpha=0.8)
+         - (1 / (w25[0])) * (w25[1] * (np.linspace(min(svm2DF['0'].to_numpy()), max(svm2DF['0'].to_numpy()), 100)) + b25), label="Lagrange C = 0.25 boundary", alpha=0.8)
 plt.plot(np.linspace(min(svm2DF['0'].to_numpy()), max(svm2DF['0'].to_numpy()), 100),
-         - (1 / (w50[0])) * (w50[1] * (np.linspace(-5, 5, 100)) + b50), label="Lagrange C = 0.50 boundary", alpha=0.8)
+         - (1 / (w50[0])) * (w50[1] * (np.linspace(min(svm2DF['0'].to_numpy()), max(svm2DF['0'].to_numpy()), 100)) + b50), label="Lagrange C = 0.50 boundary", alpha=0.8)
 plt.plot(np.linspace(min(svm2DF['0'].to_numpy()), max(svm2DF['0'].to_numpy()), 100),
-         - (1 / (w75[0])) * (w75[1] * (np.linspace(-5, 5, 100)) + b75), label="Lagrange C = 0.75 boundary", alpha=0.8)
+         - (1 / (w75[0])) * (w75[1] * (np.linspace(min(svm2DF['0'].to_numpy()), max(svm2DF['0'].to_numpy()), 100)) + b75), label="Lagrange C = 0.75 boundary", alpha=0.8)
 plt.legend()
 plt.show()
 
@@ -240,19 +240,19 @@ plt.show()
 #     taking z = sqrt(x**2 + y**2) for each data point.  Learn an optimal model
 #     for separating the data using the Lagrange multiplier formalism.  Experiment
 #     with choices for C, max_iter, and thresh as desired.
-# radialDF = pd.read_csv("radial_data.csv")
-# radial2d = radialDF[['0', '1']].to_numpy()
-# radY = radialDF['2'].to_list()
-# radialX = []
-# for xi in radial2d:
-#     radialX.append([xi[0], xi[1], np.sqrt(xi[0]**2 + xi[1]**2)])
-# radialX = np.asarray(radialX)
-# LMRad = smo_algorithm(radialX, radY, 1, 2500, 1e-5)
-# aRad = LMRad[0]
-# bRad = LMRad[1]
-# wRad = 0
-# for i, xi in enumerate(radialX):
-#     wRad += aRad[i] * radY[i] * xi
+radialDF = pd.read_csv("radial_data.csv")
+radial2d = radialDF[['0', '1']].to_numpy()
+radY = radialDF['2'].to_list()
+radialX = []
+for xi in radial2d:
+    radialX.append([xi[0], xi[1], np.sqrt(xi[0]**2 + xi[1]**2)])
+radialX = np.asarray(radialX)
+LMRad = smo_algorithm(radialX, radY, 1, 2500, 1e-5)
+aRad = LMRad[0]
+bRad = LMRad[1]
+wRad = 0
+for i, xi in enumerate(radialX):
+    wRad += aRad[i] * radY[i] * xi
     
 # Problem #2 - Cross Validation and Testing for Breast Cancer Data
 #------------------------------------------------------------------------------
@@ -263,7 +263,18 @@ plt.show()
 #     X should consist all but the first two and very last columns in the dataframe.
 #     Create a variable Y to reinterpret the binary classifiers 'B' and 'M' as
 #     -1 and +1, respectively.
-
+bcDF = pd.read_csv("breast_cancer.csv")
+bcDiags = bcDF['diagnosis'].to_list()
+bcDF = bcDF.iloc[:, 2:-3]
+bcY = []
+bcX = []
+for diag in bcDiags:
+    if diag == 'B':
+        bcY.append(-1)
+    else:
+        bcY.append(1)
+bcX = np.asarray(bcDF.values.tolist())
+bcY = np.asarray(bcY)
 
 # 2b. Perform cross-validation using a linear SVM model on the data by dividing 
 #     the indexes into 10 separate randomized classes (I recommend looking up 
@@ -277,6 +288,35 @@ plt.show()
 #          numbers.  They will most likely be abysmal success rates.  Unfortunately
 #          SVM is a difficult task to optimize by hand, which is why we are fortunate
 #          to have kernel methods at our disposal.  Speaking of which.....
+
+def bcSVM(X, y, method):
+    if method == "rbf":
+        X = RBF_Approx(X, 1e-6, 2)
+    else:
+        X = X
+    Y = y
+    sampleFolds = np.array_split(X, 10)
+    labelFolds = np.array_split(Y, 10)
+    Trained_models = []
+    Success_rates = []
+    for i, fold in enumerate(sampleFolds):
+        LMBc = smo_algorithm(fold, labelFolds[i], 0.5, 500, 1e-300)
+        aBc = LMBc[0]
+        bBc = LMBc[1]
+        wBc = 0
+        for j, xi in enumerate(fold):
+            wBc += aBc[j] * labelFolds[i][j] * xi
+        successCount = 0
+        for j, xi in enumerate(fold):
+            if labelFolds[i][j] * (np.dot(np.transpose(wBc), xi) + bBc) >= 1:
+                successCount += 1
+        Success_rates.append(successCount / np.size(fold))
+        Trained_models.append([wBc, bBc])
+        print(Success_rates)
+        print(Trained_models)
+
+# bcSVM(bcX, bcY, "linear")
+
     
 # 2c. Repeat cross-validation on the breast cancer data, but instead of a linear
 #     SVM model, employ an approximation to the RBF kernel as discussed in class.
@@ -286,6 +326,7 @@ plt.show()
 #     out in and therefore increases the chances that your data will be linearly 
 #     separable.  Do this for deg = 2,3.  I recommend taking gamma = 1e-6.
 #     Don't be surprised if this all takes well over an hour to terminate.
+bcSVM(bcX, bcY, "rbf")
 
 # Notes for Problem #2:
 # 1. To save yourself from writing the same code twice, I recommend making this
