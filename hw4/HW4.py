@@ -315,7 +315,7 @@ def bcSVM(X, y, method):
         print(Success_rates)
         print(Trained_models)
 
-# bcSVM(bcX, bcY, "linear")
+bcSVM(bcX, bcY, "linear")
 
     
 # 2c. Repeat cross-validation on the breast cancer data, but instead of a linear
