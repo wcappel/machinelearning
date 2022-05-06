@@ -8,7 +8,6 @@
 
 # Libraries
 #------------------------------------------------------------------------------
-import PIL
 import numpy as np
 import scipy.linalg as LA
 from matplotlib.patches import Ellipse
@@ -145,23 +144,23 @@ def isomap(dists, edges, dim):
 #       the covariance matrix.  Additionally, these vectors are orthogonal but will
 #       only appear perpendicular if the image is plotted with equal axes; they may
 #       appear skew otherwise.  Annotate the images appropriately.
-randDF = pd.read_csv("rand_data.csv", header=None)
-randX = randDF[0].to_numpy()
-randY = randDF[1].to_numpy()
-fig, ax = plt.subplots()
-ax.scatter(randX, randY)
-confidence_ellipse(randX, randY, ax, edgecolor='red', n_std=1)
-confidence_ellipse(randX, randY, ax, edgecolor='red', n_std=2)
-plt.show()
-
-sinDF = pd.read_csv("sin_data.csv", header=None)
-sinX = sinDF[0].to_numpy()
-sinY = sinDF[1].to_numpy()
-fig, ax = plt.subplots()
-ax.scatter(sinX, sinY)
-confidence_ellipse(sinX, sinY, ax, edgecolor='red', n_std=1)
-confidence_ellipse(sinX, sinY, ax, edgecolor='red', n_std=2)
-plt.show()
+# randDF = pd.read_csv("rand_data.csv", header=None)
+# randX = randDF[0].to_numpy()
+# randY = randDF[1].to_numpy()
+# fig, ax = plt.subplots()
+# ax.scatter(randX, randY)
+# confidence_ellipse(randX, randY, ax, edgecolor='red', n_std=1)
+# confidence_ellipse(randX, randY, ax, edgecolor='red', n_std=2)
+# plt.show()
+#
+# sinDF = pd.read_csv("sin_data.csv", header=None)
+# sinX = sinDF[0].to_numpy()
+# sinY = sinDF[1].to_numpy()
+# fig, ax = plt.subplots()
+# ax.scatter(sinX, sinY)
+# confidence_ellipse(sinX, sinY, ax, edgecolor='red', n_std=1)
+# confidence_ellipse(sinX, sinY, ax, edgecolor='red', n_std=2)
+# plt.show()
 
 #   1b. Pick your favorite image from your photo library (something school-appropriate,
 #       nothing graphic please!) and convert it to gray-scale.  Use the singular value
@@ -175,25 +174,45 @@ plt.show()
 #       Annotate your plot with a legend that displays the number of singular values
 #       needed to obtain 80%, 85%, 90%, 95%, and 99% accuracy.  Create a graphic that
 #       that shows these five reconstructions along with the original.
-img = mpimg.imread("grayscale_cat.jpg")
-print(img)
-plt.imshow(img)
+img = mpimg.imread("cookies.jpeg")
+imgU, imgSig, imgV = LA.svd(img)
+acc = []
+recons = []
+accFound = 0
+for i in range(len(imgSig)):
+    currS = np.diag(imgSig[:i])
+    decomp = np.matmul(np.matmul(np.matrix(imgU[:, :i]), np.diag(imgSig[:i])), np.matrix(imgV[:i, :]))
+    currAcc = 1 - (LA.norm(decomp - img) / LA.norm(img))
+    acc.append(currAcc)
+    if currAcc >= 0.8 and accFound < 80:
+        recons.append(decomp)
+        accFound = 80
+    elif currAcc >= 0.85 and accFound < 85:
+        recons.append(decomp)
+        accFound = 85
+    elif currAcc >= 0.9 and accFound < 90:
+        recons.append(decomp)
+        accFound = 90
+    elif currAcc >= 0.95 and accFound < 95:
+        recons.append(decomp)
+        accFound = 95
+    elif currAcc >= 0.99 and accFound < 99:
+        recons.append(decomp)
+        accFound = 99
+recons.append(img)
+plt.figure()
+f, axarr = plt.subplots(3,2)
+axarr[0][0].imshow(recons[0])
+axarr[0][1].imshow(recons[1])
+axarr[1][0].imshow(recons[2])
+axarr[1][1].imshow(recons[3])
+axarr[2][0].imshow(recons[4])
+axarr[2][1].imshow(recons[5])
 plt.show()
-imgSVD = LA.svd(np.asarray(img))
-imgU = imgSVD[0]
-imgV = np.transpose(imgSVD[2])
-imgSig = LA.diagsvd(imgSVD[1], img.shape[0], img.shape[1])
-imgSVs = LA.svdvals(img)
-print(np.size(imgSVs))
-decomp = np.matmul(np.matmul(imgU, imgSig), imgV)
-plt.imshow(decomp)
-plt.show()
-svIter = np.zeros(np.size(imgSVs))
-for sv in imgSVs:
-    svIter += sv
-    Si = LA.diagsvd(svIter, img.shape[0], img.shape[1])
-    decomp = np.matmul(np.matmul(imgU, Si), imgV)
-plt.imshow(decomp)
+
+count = [*range(0, len(imgSig))]
+plt.plot(count, acc, label="Reconstruction accuracy per SV added")
+plt.legend()
 plt.show()
 # Problem #2 - MDS of Breast Cancer Data and SVM Modeling with the Hinge Formalism
 #------------------------------------------------------------------------------

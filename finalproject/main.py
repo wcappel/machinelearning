@@ -22,7 +22,6 @@ def softmax(z):
         result.append(exp(zi)/currSum)
     return np.asarray(result)
 
-
 def decisionBoundary(val):
     """
     Returns decision boundary evaluation for value 'val'
@@ -50,33 +49,115 @@ def crossEntropyDeriv(w, x, b, yActual):
     return np.asarray(grad)
 
 def mushroomFeatures(X):
+    """
+    Converts data matrix X to a feature representation matrix
+    """
     A = []
     for xi in X:
-        currFeatures = [0] * 8
+        currFeatures = [0] * 44
+        # Cap surface
         if xi[1] == 's':
-            # smooth cap, likely to be edible
             currFeatures[0] = 1
-        if xi[0] == 'x':
-            # convex cap, likely to be edible
+        elif xi[1] == 'f':
             currFeatures[1] = 1
-        if xi[2] == 'w':
-            # white cap, likely to be edible
+        elif xi[1] == 'g':
             currFeatures[2] = 1
-        if xi[8] != 'w':
-            # non-white gills, likely to be edible
+        else:
             currFeatures[3] = 1
-        if xi[19] == 'w':
-            # white spore print, likely to be edible
+
+        # Cap shape
+        if xi[0] == 'x':
             currFeatures[4] = 1
-        if xi[7] == 'b':
-            # broad gill size, likely to be edible
+        elif xi[0] == 'b':
             currFeatures[5] = 1
-        if xi[3] == 't':
-            # has bruises, likely to be edible
+        elif xi[0] == 'c':
             currFeatures[6] = 1
-        if xi[4] != 'n':
-            # not odorless, likely to be edible
+        elif xi[0] == 'f':
             currFeatures[7] = 1
+        elif xi[0] == 'k':
+            currFeatures[8] = 1
+        else:
+            currFeatures[9] = 1
+
+        # Cap color
+        if xi[2] == 'w':
+            currFeatures[10] = 1
+        elif xi[2] == 'n':
+            currFeatures[11] = 1
+        elif xi[2] == 'b':
+            currFeatures[12] = 1
+        elif xi[2] == 'c':
+            currFeatures[13] = 1
+        elif xi[2] == 'g':
+            currFeatures[14] = 1
+        elif xi[2] == 'r':
+            currFeatures[15] = 1
+        elif xi[2] == 'p':
+            currFeatures[16] = 1
+        elif xi[2] == 'u':
+            currFeatures[17] = 1
+        elif xi[2] == 'e':
+            currFeatures[18] = 1
+        else:
+            currFeatures[19] = 1
+
+        # Gill color
+        if xi[8] == 'w':
+            currFeatures[20] = 1
+        elif xi[8] == 'k':
+            currFeatures[21] = 1
+        elif xi[8] == 'n':
+            currFeatures[22] = 1
+        elif xi[8] == 'b':
+            currFeatures[23] = 1
+        elif xi[8] == 'h':
+            currFeatures[24] = 1
+        elif xi[8] == 'g':
+            currFeatures[25] = 1
+        elif xi[8] == 'r':
+            currFeatures[26] = 1
+        elif xi[8] == 'o':
+            currFeatures[27] = 1
+        elif xi[8] == 'p':
+            currFeatures[28] = 1
+        elif xi[8] == 'u':
+            currFeatures[29] = 1
+        elif xi[8] == 'e':
+            currFeatures[30] = 1
+        else:
+            currFeatures[31] = 1
+
+        # Odor
+        if xi[4] == 'n':
+            currFeatures[32] = 1
+        elif xi[4] == 'a':
+            currFeatures[33] = 1
+        elif xi[4] == 'l':
+            currFeatures[34] = 1
+        elif xi[4] == 'c':
+            currFeatures[35] = 1
+        elif xi[4] == 'y':
+            currFeatures[36] = 1
+        elif xi[4] == 'f':
+            currFeatures[37] = 1
+        elif xi[4] == 'm':
+            currFeatures[38] = 1
+        elif xi[4] == 'p':
+            currFeatures[39] = 1
+        else:
+            currFeatures[40] = 1
+
+        # Spore print
+        if xi[19] == 'w':
+            currFeatures[41] = 1
+
+        # Gill size
+        if xi[7] == 'b':
+            currFeatures[42] = 1
+
+        # Bruises
+        if xi[3] == 't':
+            currFeatures[43] = 1
         A.append(currFeatures)
     return np.asarray(A)
 
@@ -90,12 +171,11 @@ mushroomsTest = mushroomFeatureMatrix[round((len(mushroomFeatureMatrix) - 1) * 0
 mushroomsFeatureMatrix = mushroomFeatureMatrix[round((len(mushroomFeatureMatrix) - 1) * 0.8):]
 mushroomsYTest = mushroomsY[round((len(mushroomsY) - 1) * 0.8):]
 mushroomsY = mushroomsY[:round((len(mushroomsY) - 1) * 0.8)]
-w = [0] * 8
+w = [0] * 44
 b = 0
-K = 0.000001
 D = crossEntropyDeriv(w, mushroomFeatureMatrix[0], b, mushroomsY[0])
 iter = 0
-while LA.norm(D) >= K and iter < 10000:
+while iter < 6000:
     eps = 1
     m = LA.norm(D) ** 2
     t = 0.5 * m
