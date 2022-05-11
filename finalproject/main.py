@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.linalg as LA
 import pandas as pd
+import random
 import matplotlib.pyplot as plt
 from math import exp
 
@@ -14,13 +15,8 @@ def softmax(z):
     """
     Returns softmax vector output for vector z
     """
-    result = []
-    for zi in z:
-        currSum = 0
-        for zj in z:
-            currSum += exp(zj)
-        result.append(exp(zi)/currSum)
-    return np.asarray(result)
+    s = np.max(z, axis=1)[:, np.newaxis]
+    return np.exp(z - s) / np.sum(np.exp(z - s), axis=1)[:, np.newaxis]
 
 def decisionBoundary(val):
     """
@@ -38,6 +34,13 @@ def crossEntropyCost(yActual, w, x, b):
     """
     return -(yActual * np.log2(sigmoid(np.dot(w, x) + b)) + ((1 - yActual) * np.log2(1 - sigmoid(np.dot(w, x) + b))))
 
+def multinomialCost(x, y, w):
+    """
+    Returns cost value for multinomial model
+    """
+    z = -np.dot(x, w)
+    return 1/x.shape[0] * (np.trace(np.dot(np.dot(x, w), np.transpose(y))) + np.sum(np.log(np.sum(np.exp(z), axis=1))))
+
 def crossEntropyDeriv(w, x, b, yActual):
     """
     Returns gradient of cross-entropy for an observation vector x, each xj is a a feature count value
@@ -47,6 +50,15 @@ def crossEntropyDeriv(w, x, b, yActual):
         grad.append((sigmoid((np.dot(w, x)) + b) - yActual) * xj)
     grad.append(sigmoid((np.dot(w, x)) + b) - yActual)
     return np.asarray(grad)
+
+def oneHotEncoded(list, numClasses):
+    """
+    Returns one-hot encoded vector for class labels
+    """
+    encodedY = np.zeros((len(list), numClasses))
+    for i in range(0, len(list)):
+        encodedY[i][list[i]] = 1
+    return encodedY
 
 def mushroomFeatures(X):
     """
@@ -168,14 +180,14 @@ mushroomsY = np.asarray([1 if y == 'e' else 0 for y in mushroomsY])
 mushroomsMatrix = mushroomsDF.to_numpy()
 mushroomFeatureMatrix = mushroomFeatures(mushroomsMatrix)
 mushroomsTest = mushroomFeatureMatrix[round((len(mushroomFeatureMatrix) - 1) * 0.8):]
-mushroomsFeatureMatrix = mushroomFeatureMatrix[round((len(mushroomFeatureMatrix) - 1) * 0.8):]
+mushroomsFeatureMatrix = mushroomFeatureMatrix[:round((len(mushroomFeatureMatrix) - 1) * 0.8)]
 mushroomsYTest = mushroomsY[round((len(mushroomsY) - 1) * 0.8):]
 mushroomsY = mushroomsY[:round((len(mushroomsY) - 1) * 0.8)]
 w = [0] * 44
 b = 0
 D = crossEntropyDeriv(w, mushroomFeatureMatrix[0], b, mushroomsY[0])
 iter = 0
-while iter < 6000:
+while iter < 5000:
     eps = 1
     m = LA.norm(D) ** 2
     t = 0.5 * m
@@ -202,6 +214,95 @@ print("Pred.:")
 print(predicted)
 print("Actual:")
 print(list(mushroomsYTest))
+truePos = 0
+falsePos = 0
+trueNeg = 0
+falseNeg = 0
+for i in range(len(predicted)):
+    if predicted[i] == 1 and mushroomsYTest[i] == 1:
+        truePos += 1
+    elif predicted[i] == 1 and mushroomsYTest[i] == 0:
+        falsePos += 1
+    elif predicted[i] == 0 and mushroomsYTest[i] == 0:
+        trueNeg += 1
+    elif predicted[i] == 0 and mushroomsYTest[i] == 1:
+        falseNeg += 1
 
+posPrec = truePos / (truePos + falsePos)
+negPrec = trueNeg / (trueNeg + falseNeg)
+posRecall = truePos / (truePos + falseNeg)
+negRecall = trueNeg / (trueNeg + falsePos)
+print("Pos. precision: " + str(posPrec))
+print("Neg. precision: " + str(negPrec))
+print("Pos. recall: " + str(posRecall))
+print("Neg. recall: " + str(negRecall))
 
+irisDF = pd.read_csv('iris.csv').drop(columns=['class'])
+irisX = np.asarray(irisDF.to_numpy())
+irisY = pd.read_csv('iris.csv', usecols=[4])['class'].to_list()
+irisY1 = np.asarray([0 if y == 'Iris-setosa' else 1 if y == 'Iris-versicolor' else 2 for y in irisY])
+# Shuffle since dataset is ordered
+zipped = list(zip(irisX, irisY1))
+random.shuffle(zipped)
+irisX, irisY1 = zip(*zipped)
+irisX = np.asarray(irisX)
+irisY1 = np.asarray(irisY1)
+irisXTest = irisX[round((len(irisX) - 1) * 0.7):]
+irisXTrain = irisX[:round((len(irisX) - 1) * 0.7)]
+irisYTest1 = irisY1[round((len(irisY1) - 1) * 0.7):]
+irisYTrain1 = irisY1[:round((len(irisY1) - 1) * 0.7)]
+irisYTest = oneHotEncoded(irisYTest1, 3)
+irisYTrain = oneHotEncoded(irisYTrain1, 3)
+
+w = np.zeros((irisXTrain.shape[1], irisYTrain.shape[1]))
+iter = 0
+iterList = []
+lossList = []
+wList = []
+while iter < 2500:
+    iter += 1
+    n = irisXTrain.shape[0]
+    z = -np.dot(irisXTrain, w)
+    p = softmax(z)
+    w = w - 0.005 * (1/n * (np.dot(irisXTrain.T, (irisYTrain - p))))
+    iterList.append(iter)
+    wList.append(w)
+    lossList.append(multinomialCost(irisXTrain, irisYTrain, w))
+
+z = -np.dot(irisXTest, w)
+p = softmax(z)
+predicted = np.argmax(p, axis = 1)
+print(predicted)
+print(irisYTest1)
+trueSetosa = 0
+falseSetosa = 0
+trueVersicolor = 0
+falseVersicolor = 0
+trueVirginica = 0
+falseVirginica = 0
+
+for i in range(len(predicted)):
+    if predicted[i] == 0 and irisYTest1[i] == 0:
+        trueSetosa += 1
+    elif predicted[i] == 0 and irisYTest1[i] != 0:
+        falseSetosa += 1
+    elif predicted[i] == 1 and irisYTest1[i] == 1:
+        trueVersicolor += 1
+    elif predicted[i] == 1 and irisYTest1[i] != 1:
+        falseVersicolor += 1
+    elif predicted[i] == 2 and irisYTest1[i] == 2:
+        trueVirginica += 1
+    elif predicted[i] == 2 and irisYTest1[i] != 2:
+        falseVirginica += 1
+
+setosaPrec = trueSetosa / list(irisYTest1).count(0)
+versicolorPrec = trueVersicolor / list(irisYTest1).count(1)
+virginicaPrec = trueVirginica / list(irisYTest1).count(2)
+
+print("Setosa precision:")
+print(str(setosaPrec))
+print("Versicolor precision:")
+print(str(versicolorPrec))
+print("Virginica precision:")
+print(str(virginicaPrec))
 

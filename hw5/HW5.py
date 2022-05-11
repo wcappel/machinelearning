@@ -144,23 +144,23 @@ def isomap(dists, edges, dim):
 #       the covariance matrix.  Additionally, these vectors are orthogonal but will
 #       only appear perpendicular if the image is plotted with equal axes; they may
 #       appear skew otherwise.  Annotate the images appropriately.
-# randDF = pd.read_csv("rand_data.csv", header=None)
-# randX = randDF[0].to_numpy()
-# randY = randDF[1].to_numpy()
-# fig, ax = plt.subplots()
-# ax.scatter(randX, randY)
-# confidence_ellipse(randX, randY, ax, edgecolor='red', n_std=1)
-# confidence_ellipse(randX, randY, ax, edgecolor='red', n_std=2)
-# plt.show()
-#
-# sinDF = pd.read_csv("sin_data.csv", header=None)
-# sinX = sinDF[0].to_numpy()
-# sinY = sinDF[1].to_numpy()
-# fig, ax = plt.subplots()
-# ax.scatter(sinX, sinY)
-# confidence_ellipse(sinX, sinY, ax, edgecolor='red', n_std=1)
-# confidence_ellipse(sinX, sinY, ax, edgecolor='red', n_std=2)
-# plt.show()
+randDF = pd.read_csv("rand_data.csv", header=None)
+randX = randDF[0].to_numpy()
+randY = randDF[1].to_numpy()
+fig, ax = plt.subplots()
+ax.scatter(randX, randY)
+confidence_ellipse(randX, randY, ax, edgecolor='red', n_std=1)
+confidence_ellipse(randX, randY, ax, edgecolor='red', n_std=2)
+plt.show()
+
+sinDF = pd.read_csv("sin_data.csv", header=None)
+sinX = sinDF[0].to_numpy()
+sinY = sinDF[1].to_numpy()
+fig, ax = plt.subplots()
+ax.scatter(sinX, sinY)
+confidence_ellipse(sinX, sinY, ax, edgecolor='red', n_std=1)
+confidence_ellipse(sinX, sinY, ax, edgecolor='red', n_std=2)
+plt.show()
 
 #   1b. Pick your favorite image from your photo library (something school-appropriate,
 #       nothing graphic please!) and convert it to gray-scale.  Use the singular value
